@@ -27,7 +27,7 @@ services:
     environment:
       POSTGRES_USER: auth-services
       POSTGRES_PASSWORD: auth123!
-      POSTGRES_DB: personalhub
+      POSTGRES_DB: auth-db
     ports:
       - "5433:5432"
     healthcheck:
@@ -35,7 +35,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      volumes:
+    volumes:
       - auth-db-data:/var/lib/postgresql/data
   volumes:
     auth-db-data:
