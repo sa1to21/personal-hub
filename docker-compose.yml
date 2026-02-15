@@ -1,0 +1,41 @@
+services:
+  frontend:
+    image: frontend
+    environment:
+      - VITE_API_URL=http://auth-service:3000
+    build:
+      context: ./services/frontend
+    ports:
+      - "81:80"
+    depends_on:
+      - auth-service
+
+  auth-service:
+    image: auth-service
+    environment:
+      - DATABASE_URL=postgresql://auth-services:auth123!@auth-db:5432/auth-db
+    build:
+      context: ./services/auth-service
+    ports:
+      - "3002:3000"
+    depends_on:
+      auth-db:
+       condition: service_healthy
+
+  auth-db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: auth-services
+      POSTGRES_PASSWORD: auth123!
+      POSTGRES_DB: personalhub
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U auth-services -d personalhub"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      volumes:
+      - auth-db-data:/var/lib/postgresql/data
+  volumes:
+    auth-db-data:
