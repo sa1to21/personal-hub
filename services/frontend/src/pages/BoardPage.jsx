@@ -13,6 +13,8 @@ const COLUMNS = [
   { key: 'done', label: 'Done', color: '#10b981' },
 ]
 
+const PRIORITIES = ['urgent', 'high', 'medium', 'low']
+
 const BoardPage = () => {
   const { id: projectId } = useParams()
   const [project, setProject] = useState(null)
@@ -22,6 +24,7 @@ const BoardPage = () => {
   const [selectedTask, setSelectedTask] = useState(null)
   const [addingToColumn, setAddingToColumn] = useState(null)
   const [newTaskTitle, setNewTaskTitle] = useState('')
+  const [priorityFilter, setPriorityFilter] = useState(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -73,7 +76,11 @@ const BoardPage = () => {
   }
 
   const getColumnTasks = (status) => {
-    return tasks.filter((t) => t.status === status)
+    let filtered = tasks.filter((t) => t.status === status)
+    if (priorityFilter) {
+      filtered = filtered.filter((t) => t.priority === priorityFilter)
+    }
+    return filtered
   }
 
   if (loading) {
@@ -94,6 +101,25 @@ const BoardPage = () => {
 
       {error && <div className="board-error">{error}</div>}
 
+      <div className="board-filter-bar">
+        <span className="filter-label">Priority:</span>
+        <button
+          className={`filter-btn ${!priorityFilter ? 'active' : ''}`}
+          onClick={() => setPriorityFilter(null)}
+        >
+          All
+        </button>
+        {PRIORITIES.map((p) => (
+          <button
+            key={p}
+            className={`filter-btn filter-priority-${p} ${priorityFilter === p ? 'active' : ''}`}
+            onClick={() => setPriorityFilter(priorityFilter === p ? null : p)}
+          >
+            {p.charAt(0).toUpperCase() + p.slice(1)}
+          </button>
+        ))}
+      </div>
+
       <div className="board-columns">
         {COLUMNS.map((col) => {
           const columnTasks = getColumnTasks(col.key)
@@ -105,19 +131,21 @@ const BoardPage = () => {
                   <h3>{col.label}</h3>
                   <span className="column-count">{columnTasks.length}</span>
                 </div>
-                <button
-                  className="btn-add-card"
-                  onClick={() => {
-                    setAddingToColumn(col.key)
-                    setNewTaskTitle('')
-                  }}
-                  title="Add card"
-                >
-                  +
-                </button>
               </div>
 
               <div className="column-body">
+                {columnTasks.map((task) => (
+                  <TaskCard
+                    key={task.id}
+                    task={task}
+                    onClick={() => handleTaskSelect(task)}
+                  />
+                ))}
+
+                {columnTasks.length === 0 && addingToColumn !== col.key && (
+                  <div className="column-empty">No tasks</div>
+                )}
+
                 {addingToColumn === col.key && (
                   <div className="quick-add-form">
                     <input
@@ -138,16 +166,16 @@ const BoardPage = () => {
                   </div>
                 )}
 
-                {columnTasks.map((task) => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onClick={() => handleTaskSelect(task)}
-                  />
-                ))}
-
-                {columnTasks.length === 0 && addingToColumn !== col.key && (
-                  <div className="column-empty">No tasks</div>
+                {addingToColumn !== col.key && (
+                  <button
+                    className="btn-add-task"
+                    onClick={() => {
+                      setAddingToColumn(col.key)
+                      setNewTaskTitle('')
+                    }}
+                  >
+                    + Add task
+                  </button>
                 )}
               </div>
             </div>
