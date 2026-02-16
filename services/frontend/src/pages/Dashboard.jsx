@@ -40,12 +40,12 @@ const Dashboard = () => {
           </div>
 
           <div className="features-grid">
-            <Link to="/tasks" className="feature-card-link">
+            <Link to="/projects" className="feature-card-link">
               <div className="feature-card active">
                 <div className="feature-icon">📝</div>
-                <h3>Задачи</h3>
-                <p>Управление задачами с приоритетами и статусами</p>
-                <span className="badge">Открыть</span>
+                <h3>Projects</h3>
+                <p>Kanban boards with tasks, checklists and labels</p>
+                <span className="badge">Open</span>
               </div>
             </Link>
 

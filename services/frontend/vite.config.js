@@ -11,7 +11,19 @@ export default defineConfig({
         target: process.env.VITE_API_URL || 'http://localhost:3000',
         changeOrigin: true,
       },
-      '/api/task': {
+      '/api/projects': {
+        target: process.env.VITE_TASK_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/tasks': {
+        target: process.env.VITE_TASK_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/checklists': {
+        target: process.env.VITE_TASK_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/labels': {
         target: process.env.VITE_TASK_API_URL || 'http://localhost:3000',
         changeOrigin: true,
       }

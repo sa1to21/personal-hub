@@ -1,7 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import AuthPage from './pages/AuthPage'
 import Dashboard from './pages/Dashboard'
-import TasksPage from './pages/TasksPage'
+import ProjectsPage from './pages/ProjectsPage'
+import BoardPage from './pages/BoardPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
 
 const ProtectedRoute = ({ children }) => {
@@ -24,13 +25,22 @@ function App() {
             }
           />
           <Route
-            path="/tasks"
+            path="/projects"
             element={
               <ProtectedRoute>
-                <TasksPage />
+                <ProjectsPage />
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/projects/:id"
+            element={
+              <ProtectedRoute>
+                <BoardPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/tasks" element={<Navigate to="/projects" />} />
           <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
       </Router>
