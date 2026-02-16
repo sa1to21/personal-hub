@@ -75,11 +75,14 @@ const BoardPage = () => {
     setSelectedTask(task)
   }
 
+  const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 }
+
   const getColumnTasks = (status) => {
     let filtered = tasks.filter((t) => t.status === status)
     if (priorityFilter) {
       filtered = filtered.filter((t) => t.priority === priorityFilter)
     }
+    filtered.sort((a, b) => (PRIORITY_ORDER[a.priority] ?? 4) - (PRIORITY_ORDER[b.priority] ?? 4))
     return filtered
   }
 
