@@ -1,89 +1,73 @@
 .dashboard-container {
   width: 100%;
-  max-width: 1200px;
-  padding: 20px;
+  max-width: 800px;
+  padding: 40px 20px;
   margin: 0 auto;
   min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .dashboard-card {
-  background: white;
-  border-radius: 20px;
-  padding: 40px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: fadeIn 0.5s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 32px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .dashboard-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 40px;
-  padding-bottom: 24px;
-  border-bottom: 2px solid #f0f0f0;
+  margin-bottom: 32px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .dashboard-header h1 {
-  font-size: 32px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  margin-bottom: 4px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 2px;
 }
 
 .user-email {
-  color: #666;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 13px;
 }
 
 .logout-btn {
-  padding: 12px 24px;
-  border: 2px solid #e0e0e0;
-  background: white;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #666;
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 }
 
 .logout-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  transform: translateY(-2px);
+  border-color: #5b5fc7;
+  color: #5b5fc7;
 }
 
 .dashboard-content {
   display: flex;
   flex-direction: column;
-  gap: 40px;
+  gap: 32px;
 }
 
 .welcome-section {
   text-align: center;
-  padding: 40px 20px;
+  padding: 24px 16px;
 }
 
 .icon-circle {
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 16px;
+  background: #5b5fc7;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -91,72 +75,74 @@
   color: white;
 }
 
+.icon-circle svg {
+  width: 28px;
+  height: 28px;
+}
+
 .welcome-section h2 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 12px;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 8px;
 }
 
 .welcome-section p {
-  color: #666;
-  font-size: 16px;
-  max-width: 600px;
+  color: #6b7280;
+  font-size: 14px;
+  max-width: 480px;
   margin: 0 auto;
+  line-height: 1.5;
 }
 
 .features-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
 }
 
 .feature-card {
-  padding: 30px;
-  border: 2px solid #e0e0e0;
-  border-radius: 16px;
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+  padding: 20px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: border-color 0.2s;
 }
 
 .feature-card:hover {
-  border-color: #667eea;
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+  border-color: #d1d5db;
 }
 
 .feature-icon {
-  font-size: 40px;
-  margin-bottom: 16px;
+  font-size: 28px;
+  margin-bottom: 12px;
 }
 
 .feature-card h3 {
-  font-size: 20px;
-  font-weight: 700;
-  color: #333;
-  margin-bottom: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
 }
 
 .feature-card p {
-  color: #666;
-  font-size: 14px;
+  color: #6b7280;
+  font-size: 13px;
   line-height: 1.5;
 }
 
 .badge {
   display: inline-block;
-  margin-top: 12px;
-  padding: 6px 12px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
+  margin-top: 10px;
+  padding: 3px 10px;
+  background: #e5e7eb;
+  color: #6b7280;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .feature-card.coming-soon {
-  opacity: 0.8;
+  opacity: 0.55;
 }
 
 .feature-card-link {
@@ -167,22 +153,27 @@
 
 .feature-card.active {
   opacity: 1;
+  border-color: #5b5fc7;
   cursor: pointer;
-  border-color: #667eea;
+}
+
+.feature-card.active:hover {
+  border-color: #4a4eb5;
 }
 
 .feature-card.active .badge {
-  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  background: #5b5fc7;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
   .dashboard-card {
-    padding: 24px;
+    padding: 20px;
   }
 
   .dashboard-header {
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     align-items: flex-start;
   }
 

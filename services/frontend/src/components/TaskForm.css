@@ -4,171 +4,157 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
 }
 
 .modal-content {
-  background: white;
-  border-radius: 20px;
-  padding: 32px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 28px;
   width: 100%;
-  max-width: 500px;
+  max-width: 460px;
   margin: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUp 0.3s ease-out;
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 24px;
+  margin-bottom: 20px;
 }
 
 .modal-header h2 {
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  font-size: 17px;
+  font-weight: 600;
+  color: #1a1a1a;
 }
 
 .modal-close {
   background: none;
   border: none;
-  font-size: 24px;
+  font-size: 20px;
   cursor: pointer;
-  color: #999;
+  color: #9ca3af;
   padding: 4px 8px;
-  border-radius: 8px;
-  transition: all 0.2s;
+  border-radius: 4px;
+  transition: color 0.15s;
+  line-height: 1;
 }
 
 .modal-close:hover {
-  background: #f5f5f5;
-  color: #333;
+  color: #1a1a1a;
 }
 
 .task-form {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
 }
 
 .task-form .form-group {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 5px;
 }
 
 .task-form label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #555;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .task-form input,
 .task-form select,
 .task-form textarea {
-  padding: 12px 14px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  font-size: 15px;
+  padding: 9px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
   font-family: inherit;
-  transition: all 0.2s;
+  transition: border-color 0.15s;
   outline: none;
+  color: #1a1a1a;
 }
 
 .task-form input:focus,
 .task-form select:focus,
 .task-form textarea:focus {
-  border-color: #667eea;
-  box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+  border-color: #5b5fc7;
+  box-shadow: 0 0 0 3px rgba(91, 95, 199, 0.1);
 }
 
 .task-form textarea {
   resize: vertical;
-  min-height: 80px;
+  min-height: 72px;
 }
 
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  gap: 12px;
 }
 
 .form-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 8px;
+  gap: 10px;
+  margin-top: 4px;
 }
 
 .btn-save {
   flex: 1;
-  padding: 14px;
+  padding: 10px;
   border: none;
-  border-radius: 10px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 6px;
+  background: #5b5fc7;
   color: white;
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s;
+  transition: background 0.15s;
 }
 
 .btn-save:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  background: #4a4eb5;
 }
 
 .btn-save:disabled {
-  opacity: 0.7;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
 .btn-cancel {
   flex: 1;
-  padding: 14px;
-  border: 2px solid #e0e0e0;
-  border-radius: 10px;
-  background: white;
-  font-size: 15px;
-  font-weight: 600;
-  color: #666;
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: border-color 0.15s;
 }
 
 .btn-cancel:hover {
-  border-color: #667eea;
-  color: #667eea;
+  border-color: #9ca3af;
+  color: #374151;
 }
 
 .form-error {
-  padding: 10px 14px;
-  background: #fee;
-  border: 1px solid #fcc;
-  border-radius: 8px;
-  color: #c33;
-  font-size: 14px;
+  padding: 10px 12px;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  color: #dc3545;
+  font-size: 13px;
 }
 
 @media (max-width: 500px) {
@@ -177,6 +163,6 @@
   }
 
   .modal-content {
-    padding: 24px;
+    padding: 20px;
   }
 }
