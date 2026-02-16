@@ -7,8 +7,12 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 80,
     proxy: {
-      '/api': {
+      '/api/auth': {
         target: process.env.VITE_API_URL || 'http://localhost:3000',
+        changeOrigin: true,
+      },
+      '/api/task': {
+        target: process.env.VITE_TASK_API_URL || 'http://localhost:3000',
         changeOrigin: true,
       }
     }
