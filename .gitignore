@@ -9,4 +9,3 @@ build/
 /md
 /.claude
 .dockerignore
-*.md
