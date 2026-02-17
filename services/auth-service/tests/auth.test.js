@@ -1,3 +1,5 @@
+process.env.JWT_SECRET = 'test-secret';
+
 const request = require('supertest');
 const express = require('express');
 const authRoutes = require('../src/routes/auth');
