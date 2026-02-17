@@ -1,16 +1,6 @@
-import axios from 'axios'
+import { createApiClient } from './client'
 
-const api = axios.create({
-  baseURL: '/api',
-})
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('accessToken')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
+const api = createApiClient('/api')
 
 // Tasks
 export const getProjectTasks = async (projectId, filters = {}) => {

@@ -1,7 +1,8 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import axios from 'axios'
+import { createApiClient } from '../api/client'
 
 const AuthContext = createContext(null)
+const api = createApiClient('/api/auth')
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
@@ -16,33 +17,32 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const accessToken = localStorage.getItem('accessToken')
-    const refreshToken = localStorage.getItem('refreshToken')
+    const initAuth = async () => {
+      const accessToken = localStorage.getItem('accessToken')
+      const refreshToken = localStorage.getItem('refreshToken')
 
-    if (accessToken && refreshToken) {
-      fetchUser(accessToken)
-    } else {
-      setLoading(false)
+      if (!accessToken && !refreshToken) {
+        setLoading(false)
+        return
+      }
+
+      try {
+        const response = await api.get('/me')
+        setUser(response.data)
+      } catch (error) {
+        // Interceptor handles refresh automatically on 401/403
+        // If it still fails, tokens are cleared by the interceptor
+        console.error('Failed to restore session:', error)
+      } finally {
+        setLoading(false)
+      }
     }
+
+    initAuth()
   }, [])
 
-  const fetchUser = async (token) => {
-    try {
-      const response = await axios.get('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-      setUser(response.data)
-    } catch (error) {
-      console.error('Failed to fetch user:', error)
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const login = async (email, password) => {
-    const response = await axios.post('/api/auth/login', { email, password })
+    const response = await api.post('/login', { email, password })
     const { accessToken, refreshToken, user } = response.data
 
     localStorage.setItem('accessToken', accessToken)
@@ -51,7 +51,7 @@ export const AuthProvider = ({ children }) => {
   }
 
   const register = async (email, password) => {
-    const response = await axios.post('/api/auth/register', { email, password })
+    const response = await api.post('/register', { email, password })
     const { accessToken, refreshToken, user } = response.data
 
     localStorage.setItem('accessToken', accessToken)
