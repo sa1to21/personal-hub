@@ -25,7 +25,7 @@ const AuthPage = () => {
       }
       navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Что-то пошло не так')
+      setError(err.response?.data?.error || 'Ошибка сервера')
     } finally {
       setLoading(false)
     }

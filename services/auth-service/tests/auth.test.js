@@ -98,7 +98,7 @@ describe('Auth Service', () => {
         .mockResolvedValueOnce({ rows: [mockUser] })
         .mockResolvedValueOnce({ rows: [] });
 
-      const bcrypt = require('bcrypt');
+      const bcrypt = require('bcryptjs');
       bcrypt.compare = jest.fn().mockResolvedValue(true);
 
       const response = await request(app)
