@@ -1,6 +1,7 @@
 services:
   frontend:
     image: frontend
+    containern_name: ph-frontend
     environment:
       - VITE_API_URL=http://auth-service:3000
       - VITE_TASK_API_URL=http://task-service:3000
@@ -14,6 +15,7 @@ services:
 
   auth-service:
     image: auth-service
+    containern_name: ph-auth-service
     environment:
       - DATABASE_URL=postgresql://auth-services:auth123!@auth-db:5432/auth-db
       - JWT_SECRET=your-secret-key-change-in-production
@@ -28,6 +30,7 @@ services:
 
   auth-db:
     image: postgres:latest
+    containern_name: ph-auth-service-db
     environment:
       POSTGRES_USER: auth-services
       POSTGRES_PASSWORD: auth123!
@@ -42,6 +45,7 @@ services:
 
   task-service:
     image: task-service
+    containern_name: ph-task-service
     environment:
       - DATABASE_URL=postgresql://task-service:task123!@task-db:5432/task-db
       - JWT_SECRET=your-secret-key-change-in-production
@@ -56,6 +60,7 @@ services:
 
   task-db:
     image: postgres:latest
+    containern_name: ph-task-service-db
     environment:
       POSTGRES_USER: task-service
       POSTGRES_PASSWORD: task123!

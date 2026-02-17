@@ -21,5 +21,14 @@ pipeline {
                 }
             }
         }
+        stage('Dev-delivery') {
+            steps {
+                    sh '''
+                    docker compose down
+                    docker compose up -d --build
+                    '''
+                
+            }
+        }
     }
 }
