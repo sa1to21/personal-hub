@@ -37,6 +37,15 @@ Task-service — сервис управления задачами на Node.js
 | `.gitignore` | Настройка исключений для Git |
 
 ---
+# CI/CD
+
+Jenkins pipeline выполняет три стадии:
+
+1. **Test-auth** — запуск тестов auth-service (`npm test`)
+2. **Build-frontend** — сборка фронтенда (`npm run build`)
+3. **Dev-delivery** — пересборка и деплой всех контейнеров через Docker Compose
+
+---
 
 ## Структура проекта
 
@@ -60,16 +69,6 @@ personalhub/
 │       ├── nginx.conf            # Nginx конфигурация для frontend контейнера
 │       └── src/                  # Код приложения (AI)
 ```
-
----
-# CI/CD
-
-Jenkins pipeline выполняет три стадии:
-
-1. **Test-auth** — запуск тестов auth-service (`npm test`)
-2. **Build-frontend** — сборка фронтенда (`npm run build`)
-3. **Dev-delivery** — пересборка и деплой всех контейнеров через Docker Compose
-
 ---
 
 ## Примечание
