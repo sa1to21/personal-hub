@@ -1,5 +1,6 @@
 pipeline {
     agent any
+    stages {
         stage('Test-auth') {
             steps {
                 dir (services/auth-service) {
