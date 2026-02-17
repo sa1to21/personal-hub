@@ -23,7 +23,7 @@ const AuthPage = () => {
       } else {
         await register(email, password)
       }
-      navigate('/dashboard')
+      navigate('/projects')
     } catch (err) {
       setError(err.response?.data?.error || 'Ошибка сервера')
     } finally {
