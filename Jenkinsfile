@@ -3,9 +3,9 @@ pipeline {
     stages {
         stage('Test-auth') {
             steps {
-                dir (services/auth-service) {
+                dir ('services/auth-service') {
                     sh '''
-                    npm ci
+                    npm install
                     npm test
                     '''
                 }
@@ -13,9 +13,9 @@ pipeline {
         }
         stage('Build-frontend') {
             steps {
-                dir (services/frontend) {
+                dir ('services/frontend') {
                     sh '''
-                    npm ci
+                    npm install
                     npm run build
                     '''
                 }
