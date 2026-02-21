@@ -4,6 +4,8 @@ WORKDIR /home/app
 
 COPY package.json ./
 
+RUN apk add --no-cache python3 make g++ # pakages needed for bcrypt
+
 RUN npm install
 
 COPY . .

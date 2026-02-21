@@ -1,5 +1,5 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
@@ -134,30 +134,31 @@ router.post('/refresh', async (req, res) => {
       return res.status(403).json({ error: 'Invalid or expired refresh token' });
     }
 
-    jwt.verify(refreshToken, process.env.JWT_SECRET, async (err, decoded) => {
-      if (err) {
-        return res.status(403).json({ error: 'Invalid refresh token' });
-      }
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(403).json({ error: 'Invalid refresh token' });
+    }
 
-      const userResult = await pool.query(
-        'SELECT id, email FROM users WHERE id = $1',
-        [decoded.userId]
-      );
+    const userResult = await pool.query(
+      'SELECT id, email FROM users WHERE id = $1',
+      [decoded.userId]
+    );
 
-      if (userResult.rows.length === 0) {
-        return res.status(403).json({ error: 'User not found' });
-      }
+    if (userResult.rows.length === 0) {
+      return res.status(403).json({ error: 'User not found' });
+    }
 
-      const user = userResult.rows[0];
+    const user = userResult.rows[0];
 
-      const accessToken = jwt.sign(
-        { userId: user.id, email: user.email },
-        process.env.JWT_SECRET,
-        { expiresIn: process.env.JWT_ACCESS_EXPIRATION }
-      );
+    const accessToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_ACCESS_EXPIRATION }
+    );
 
-      res.json({ accessToken });
-    });
+    res.json({ accessToken });
   } catch (error) {
     console.error('Token refresh error:', error);
     res.status(500).json({ error: 'Internal server error' });

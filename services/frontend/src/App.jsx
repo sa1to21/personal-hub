@@ -1,9 +1,11 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
-import AuthPage from './pages/AuthPage'
-import Dashboard from './pages/Dashboard'
-import ProjectsPage from './pages/ProjectsPage'
-import BoardPage from './pages/BoardPage'
 import { AuthProvider, useAuth } from './context/AuthContext'
+
+const AuthPage = lazy(() => import('./pages/AuthPage'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const ProjectsPage = lazy(() => import('./pages/ProjectsPage'))
+const BoardPage = lazy(() => import('./pages/BoardPage'))
 
 const ProtectedRoute = ({ children }) => {
   const { user } = useAuth()
@@ -14,6 +16,7 @@ function App() {
   return (
     <AuthProvider>
       <Router>
+        <Suspense fallback={<div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>Loading...</div>}>
         <Routes>
           <Route path="/auth" element={<AuthPage />} />
           <Route
@@ -43,6 +46,7 @@ function App() {
           <Route path="/tasks" element={<Navigate to="/projects" />} />
           <Route path="/" element={<Navigate to="/projects" />} />
         </Routes>
+        </Suspense>
       </Router>
     </AuthProvider>
   )

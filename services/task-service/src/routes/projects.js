@@ -45,16 +45,11 @@ router.post('/', async (req, res) => {
     const { name, description, color } = value;
     const userId = req.user.userId;
 
-    const posResult = await pool.query(
-      'SELECT COALESCE(MAX(position), -1) + 1 AS next_pos FROM projects WHERE user_id = $1',
-      [userId]
-    );
-
     const result = await pool.query(
       `INSERT INTO projects (user_id, name, description, color, position)
-       VALUES ($1, $2, $3, $4, $5)
+       VALUES ($1, $2, $3, $4, (SELECT COALESCE(MAX(position), -1) + 1 FROM projects WHERE user_id = $1))
        RETURNING *`,
-      [userId, name, description || null, color, posResult.rows[0].next_pos]
+      [userId, name, description || null, color]
     );
 
     res.status(201).json(result.rows[0]);
@@ -106,15 +101,6 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ error: error.details[0].message });
     }
 
-    const checkResult = await pool.query(
-      'SELECT id FROM projects WHERE id = $1 AND user_id = $2',
-      [id, userId]
-    );
-
-    if (checkResult.rows.length === 0) {
-      return res.status(404).json({ error: 'Project not found' });
-    }
-
     const updates = [];
     const params = [];
     let paramIndex = 1;
@@ -136,6 +122,9 @@ router.put('/:id', async (req, res) => {
     `;
 
     const result = await pool.query(query, params);
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Update project error:', error);

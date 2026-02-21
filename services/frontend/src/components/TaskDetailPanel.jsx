@@ -79,8 +79,9 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
   const handleSaveTitle = async () => {
     setEditingTitle(false)
     if (titleValue.trim() && titleValue !== task.title) {
-      await updateTask(taskId, { title: titleValue.trim() })
-      fetchTask()
+      const newTitle = titleValue.trim()
+      setTask((prev) => ({ ...prev, title: newTitle }))
+      await updateTask(taskId, { title: newTitle })
       onUpdated()
     } else {
       setTitleValue(task.title)
@@ -91,49 +92,58 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
     setDescFocused(false)
     const newDesc = descValue.trim() || null
     if (newDesc !== (task.description || null)) {
+      setTask((prev) => ({ ...prev, description: newDesc }))
       await updateTask(taskId, { description: newDesc })
-      fetchTask()
-      onUpdated()
     }
   }
 
   const handleStatusChange = async (newStatus) => {
+    setTask((prev) => ({ ...prev, status: newStatus }))
     await updateTask(taskId, { status: newStatus })
-    fetchTask()
     onStatusChange(taskId, newStatus)
     onUpdated()
   }
 
   const handlePriorityChange = async (newPriority) => {
+    setTask((prev) => ({ ...prev, priority: newPriority }))
     await updateTask(taskId, { priority: newPriority })
-    fetchTask()
     onUpdated()
   }
 
   const handleDueDateChange = async (dateStr) => {
-    await updateTask(taskId, { due_date: dateStr || null })
-    fetchTask()
+    const newDate = dateStr || null
+    setTask((prev) => ({ ...prev, due_date: newDate }))
+    await updateTask(taskId, { due_date: newDate })
     onUpdated()
   }
 
   const handleAddCheckItem = async () => {
     if (!newCheckItem.trim()) return
-    await addChecklistItem(taskId, { title: newCheckItem.trim() })
+    const title = newCheckItem.trim()
     setNewCheckItem('')
-    fetchTask()
-    onUpdated()
+    const result = await addChecklistItem(taskId, { title })
+    setTask((prev) => ({
+      ...prev,
+      checklist: [...(prev.checklist || []), result],
+    }))
   }
 
   const handleToggleCheck = async (checkId) => {
+    setTask((prev) => ({
+      ...prev,
+      checklist: prev.checklist.map((c) =>
+        c.id === checkId ? { ...c, is_completed: !c.is_completed } : c
+      ),
+    }))
     await toggleChecklistItem(checkId)
-    fetchTask()
-    onUpdated()
   }
 
   const handleDeleteCheck = async (checkId) => {
+    setTask((prev) => ({
+      ...prev,
+      checklist: prev.checklist.filter((c) => c.id !== checkId),
+    }))
     await deleteChecklistItem(checkId)
-    fetchTask()
-    onUpdated()
   }
 
   const handleCreateLabel = async () => {
@@ -147,11 +157,21 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
     const taskLabels = task.labels || []
     const isAttached = taskLabels.some((l) => l.id === labelId)
     if (isAttached) {
+      setTask((prev) => ({
+        ...prev,
+        labels: prev.labels.filter((l) => l.id !== labelId),
+      }))
       await removeLabel(taskId, labelId)
     } else {
+      const label = projectLabels.find((l) => l.id === labelId)
+      if (label) {
+        setTask((prev) => ({
+          ...prev,
+          labels: [...(prev.labels || []), { id: label.id, name: label.name, color: label.color }],
+        }))
+      }
       await attachLabel(taskId, labelId)
     }
-    fetchTask()
     onUpdated()
   }
 
