@@ -2,6 +2,22 @@ import axios from 'axios'
 
 let refreshPromise = null
 
+const parseJwtExp = (token) => {
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    return payload.exp ? payload.exp * 1000 : null
+  } catch {
+    return null
+  }
+}
+
+const isTokenExpiringSoon = (token) => {
+  const exp = parseJwtExp(token)
+  if (!exp) return true
+  // Обновляем за 60 секунд до истечения
+  return Date.now() > exp - 60000
+}
+
 const refreshAccessToken = async () => {
   if (refreshPromise) return refreshPromise
 
@@ -25,8 +41,20 @@ const refreshAccessToken = async () => {
 export const createApiClient = (baseURL) => {
   const api = axios.create({ baseURL })
 
-  api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('accessToken')
+  api.interceptors.request.use(async (config) => {
+    const url = config.url || ''
+    const isAuthEndpoint = url.includes('/login') || url.includes('/register') || url.includes('/refresh')
+
+    let token = localStorage.getItem('accessToken')
+
+    if (token && !isAuthEndpoint && isTokenExpiringSoon(token)) {
+      try {
+        token = await refreshAccessToken()
+      } catch {
+        // Fallback: отправляем с текущим токеном, response interceptor обработает 401
+      }
+    }
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
     }
