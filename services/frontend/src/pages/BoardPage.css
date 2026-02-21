@@ -282,6 +282,12 @@
   background: #e5e7eb;
 }
 
+/* Drag and Drop */
+.column-body-over {
+  background: rgba(91, 95, 199, 0.06);
+  border-radius: 8px;
+}
+
 @media (max-width: 768px) {
   .board-columns {
     padding: 12px;

@@ -34,6 +34,11 @@ export const updateTaskStatus = async (id, status) => {
   return response.data
 }
 
+export const reorderTask = async (id, { status, position }) => {
+  const response = await api.patch(`/tasks/${id}/reorder`, { status, position })
+  return response.data
+}
+
 export const deleteTask = async (id) => {
   const response = await api.delete(`/tasks/${id}`)
   return response.data
@@ -57,6 +62,11 @@ export const toggleChecklistItem = async (id) => {
 
 export const deleteChecklistItem = async (id) => {
   const response = await api.delete(`/checklists/${id}`)
+  return response.data
+}
+
+export const reorderChecklist = async (taskId, orderedIds) => {
+  const response = await api.put(`/checklists/task/${taskId}/reorder`, { orderedIds })
   return response.data
 }
 

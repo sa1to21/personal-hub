@@ -1,11 +1,27 @@
 import { useState, useEffect, useRef } from 'react'
 import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import {
   getTask,
   updateTask,
   deleteTask,
   addChecklistItem,
   toggleChecklistItem,
   deleteChecklistItem,
+  reorderChecklist,
   getProjectLabels,
   createLabel,
   attachLabel,
@@ -29,6 +45,38 @@ const PRIORITY_OPTIONS = [
 
 const LABEL_COLORS = ['#dc2626', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6', '#ec4899', '#6b7280', '#1abc9c']
 
+const SortableChecklistItem = ({ item, onToggle, onDelete }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: item.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} className={`checklist-item ${isDragging ? 'checklist-item-dragging' : ''}`}>
+      <span className="drag-handle" {...attributes} {...listeners}>&#x2630;</span>
+      <input
+        type="checkbox"
+        checked={item.is_completed}
+        onChange={() => onToggle(item.id)}
+      />
+      <span className={`check-title ${item.is_completed ? 'completed' : ''}`}>
+        {item.title}
+      </span>
+      <button className="btn-check-delete" onClick={() => onDelete(item.id)}>&times;</button>
+    </div>
+  )
+}
+
 const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange }) => {
   const [task, setTask] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -44,6 +92,11 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
   const [newLabelColor, setNewLabelColor] = useState('#3b82f6')
   const [confirmDelete, setConfirmDelete] = useState(false)
   const titleRef = useRef(null)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor)
+  )
 
   const fetchTask = async () => {
     try {
@@ -144,6 +197,24 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
       checklist: prev.checklist.filter((c) => c.id !== checkId),
     }))
     await deleteChecklistItem(checkId)
+  }
+
+  const handleChecklistDragEnd = async (event) => {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    const checklist = task.checklist || []
+    const oldIndex = checklist.findIndex((c) => c.id === active.id)
+    const newIndex = checklist.findIndex((c) => c.id === over.id)
+
+    const newChecklist = arrayMove(checklist, oldIndex, newIndex)
+    setTask((prev) => ({ ...prev, checklist: newChecklist }))
+
+    try {
+      await reorderChecklist(taskId, newChecklist.map((c) => c.id))
+    } catch (err) {
+      setTask((prev) => ({ ...prev, checklist })) // rollback
+    }
   }
 
   const handleCreateLabel = async () => {
@@ -309,21 +380,27 @@ const TaskDetailPanel = ({ taskId, projectId, onClose, onUpdated, onStatusChange
                 />
               </div>
             )}
-            <div className="checklist-items">
-              {checklist.map((item) => (
-                <div key={item.id} className="checklist-item">
-                  <input
-                    type="checkbox"
-                    checked={item.is_completed}
-                    onChange={() => handleToggleCheck(item.id)}
-                  />
-                  <span className={`check-title ${item.is_completed ? 'completed' : ''}`}>
-                    {item.title}
-                  </span>
-                  <button className="btn-check-delete" onClick={() => handleDeleteCheck(item.id)}>&times;</button>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleChecklistDragEnd}
+            >
+              <SortableContext
+                items={checklist.map((c) => c.id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="checklist-items">
+                  {checklist.map((item) => (
+                    <SortableChecklistItem
+                      key={item.id}
+                      item={item}
+                      onToggle={handleToggleCheck}
+                      onDelete={handleDeleteCheck}
+                    />
+                  ))}
                 </div>
-              ))}
-            </div>
+              </SortableContext>
+            </DndContext>
             <div className="checklist-add">
               <input
                 type="text"

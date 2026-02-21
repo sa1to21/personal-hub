@@ -189,6 +189,85 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Reorder task (move between columns and/or reorder within column)
+router.patch('/:id/reorder', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { id } = req.params;
+    const userId = req.user.userId;
+    const { status, position } = req.body;
+
+    if (!['todo', 'in_progress', 'review', 'done'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status' });
+    }
+    if (typeof position !== 'number' || position < 0) {
+      return res.status(400).json({ error: 'Invalid position' });
+    }
+
+    await client.query('BEGIN');
+
+    const taskResult = await client.query(
+      'SELECT * FROM tasks WHERE id = $1 AND user_id = $2',
+      [id, userId]
+    );
+    if (taskResult.rows.length === 0) {
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    const task = taskResult.rows[0];
+    const oldStatus = task.status;
+    const oldPosition = task.position;
+
+    if (oldStatus === status) {
+      if (oldPosition < position) {
+        await client.query(
+          `UPDATE tasks SET position = position - 1
+           WHERE project_id = $1 AND user_id = $2 AND status = $3
+             AND position > $4 AND position <= $5 AND id != $6`,
+          [task.project_id, userId, status, oldPosition, position, id]
+        );
+      } else if (oldPosition > position) {
+        await client.query(
+          `UPDATE tasks SET position = position + 1
+           WHERE project_id = $1 AND user_id = $2 AND status = $3
+             AND position >= $4 AND position < $5 AND id != $6`,
+          [task.project_id, userId, status, position, oldPosition, id]
+        );
+      }
+    } else {
+      await client.query(
+        `UPDATE tasks SET position = position - 1
+         WHERE project_id = $1 AND user_id = $2 AND status = $3
+           AND position > $4`,
+        [task.project_id, userId, oldStatus, oldPosition]
+      );
+      await client.query(
+        `UPDATE tasks SET position = position + 1
+         WHERE project_id = $1 AND user_id = $2 AND status = $3
+           AND position >= $4`,
+        [task.project_id, userId, status, position]
+      );
+    }
+
+    const result = await client.query(
+      `UPDATE tasks SET status = $1, position = $2, updated_at = NOW()
+       WHERE id = $3 AND user_id = $4
+       RETURNING *`,
+      [status, position, id, userId]
+    );
+
+    await client.query('COMMIT');
+    res.json(result.rows[0]);
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Reorder task error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 // Quick status change
 router.patch('/:id/status', async (req, res) => {
   try {

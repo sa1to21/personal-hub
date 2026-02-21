@@ -1,3 +1,4 @@
+import { forwardRef } from 'react'
 import './TaskCard.css'
 
 const PRIORITY_COLORS = {
@@ -14,7 +15,7 @@ const PRIORITY_LABELS = {
   low: 'Low',
 }
 
-const TaskCard = ({ task, onClick }) => {
+const TaskCard = forwardRef(({ task, onClick, isDragging, dragHandleProps, style, ...props }, ref) => {
   const checklist = task.checklist || []
   const labels = task.labels || []
   const completedCount = checklist.filter((c) => c.is_completed).length
@@ -29,7 +30,13 @@ const TaskCard = ({ task, onClick }) => {
   }
 
   return (
-    <div className="task-card" onClick={onClick}>
+    <div
+      ref={ref}
+      className={`task-card ${isDragging ? 'task-card-dragging' : ''}`}
+      onClick={onClick}
+      style={style}
+      {...props}
+    >
       <div className="task-card-priority-bar" style={{ backgroundColor: PRIORITY_COLORS[task.priority] }} />
       <div className="task-card-body">
         {labels.length > 0 && (
@@ -66,6 +73,8 @@ const TaskCard = ({ task, onClick }) => {
       </div>
     </div>
   )
-}
+})
+
+TaskCard.displayName = 'TaskCard'
 
 export default TaskCard

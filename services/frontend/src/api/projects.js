@@ -26,3 +26,8 @@ export const deleteProject = async (id) => {
   const response = await api.delete(`/${id}`)
   return response.data
 }
+
+export const reorderProjects = async (orderedIds) => {
+  const response = await api.put('/reorder', { orderedIds })
+  return response.data
+}

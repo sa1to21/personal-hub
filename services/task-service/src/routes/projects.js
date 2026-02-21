@@ -132,6 +132,36 @@ router.put('/:id', async (req, res) => {
   }
 });
 
+// Reorder projects
+router.put('/reorder', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const userId = req.user.userId;
+    const { orderedIds } = req.body;
+
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      return res.status(400).json({ error: 'orderedIds must be a non-empty array' });
+    }
+
+    await client.query('BEGIN');
+    for (let i = 0; i < orderedIds.length; i++) {
+      await client.query(
+        'UPDATE projects SET position = $1, updated_at = NOW() WHERE id = $2 AND user_id = $3',
+        [i, orderedIds[i], userId]
+      );
+    }
+    await client.query('COMMIT');
+
+    res.json({ message: 'Projects reordered' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Reorder projects error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 // Delete project
 router.delete('/:id', async (req, res) => {
   try {

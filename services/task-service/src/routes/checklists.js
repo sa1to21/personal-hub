@@ -105,6 +105,45 @@ router.patch('/:id/toggle', async (req, res) => {
   }
 });
 
+// Reorder checklist items
+router.put('/task/:taskId/reorder', async (req, res) => {
+  const client = await pool.connect();
+  try {
+    const { taskId } = req.params;
+    const userId = req.user.userId;
+    const { orderedIds } = req.body;
+
+    if (!Array.isArray(orderedIds) || orderedIds.length === 0) {
+      return res.status(400).json({ error: 'orderedIds must be a non-empty array' });
+    }
+
+    const taskCheck = await client.query(
+      'SELECT id FROM tasks WHERE id = $1 AND user_id = $2',
+      [taskId, userId]
+    );
+    if (taskCheck.rows.length === 0) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+
+    await client.query('BEGIN');
+    for (let i = 0; i < orderedIds.length; i++) {
+      await client.query(
+        'UPDATE checklists SET position = $1 WHERE id = $2 AND task_id = $3',
+        [i, orderedIds[i], taskId]
+      );
+    }
+    await client.query('COMMIT');
+
+    res.json({ message: 'Checklist reordered' });
+  } catch (error) {
+    await client.query('ROLLBACK');
+    console.error('Reorder checklist error:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
 // Delete checklist item
 router.delete('/:id', async (req, res) => {
   try {

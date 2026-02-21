@@ -1,9 +1,84 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { getProjects, createProject, updateProject, deleteProject } from '../api/projects'
+import {
+  DndContext,
+  DragOverlay,
+  closestCenter,
+  PointerSensor,
+  KeyboardSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  rectSortingStrategy,
+  useSortable,
+  arrayMove,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { getProjects, createProject, updateProject, deleteProject, reorderProjects } from '../api/projects'
 import './ProjectsPage.css'
 
 const COLOR_OPTIONS = ['#5b5fc7', '#e74c3c', '#27ae60', '#f39c12', '#3498db', '#9b59b6', '#1abc9c', '#e67e22']
+
+const ProjectCardContent = ({ project, onEdit, onDelete, deletingId, confirmDelete, cancelDelete, style, isDragging, ...props }) => {
+  const navigate = useNavigate()
+
+  return (
+    <div
+      className={`project-card ${isDragging ? 'project-card-dragging' : ''}`}
+      style={{ ...style, borderTopColor: project.color || '#5b5fc7' }}
+      onClick={() => navigate(`/projects/${project.id}`)}
+      {...props}
+    >
+      <div className="project-card-header">
+        <h3 className="project-name">{project.name}</h3>
+        <div className="project-actions">
+          <button className="btn-icon-sm" onClick={(e) => onEdit(e, project)} title="Edit">&#9998;</button>
+          {deletingId === project.id ? (
+            <span className="confirm-delete-inline">
+              <button className="btn-confirm-del" onClick={(e) => onDelete(e, project.id)}>Delete</button>
+              <button className="btn-confirm-cancel" onClick={cancelDelete}>Cancel</button>
+            </span>
+          ) : (
+            <button className="btn-icon-sm delete" onClick={(e) => confirmDelete(e, project.id)} title="Delete">&times;</button>
+          )}
+        </div>
+      </div>
+      {project.description && <p className="project-description">{project.description}</p>}
+      <div className="project-stats">
+        <span className="stat todo">{project.todo_count || 0} To Do</span>
+        <span className="stat in-progress">{project.in_progress_count || 0} In Progress</span>
+        <span className="stat review">{project.review_count || 0} Review</span>
+        <span className="stat done">{project.done_count || 0} Done</span>
+      </div>
+      <div className="project-total">{project.total_tasks || 0} tasks total</div>
+    </div>
+  )
+}
+
+const SortableProjectCard = ({ project, ...cardProps }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: project.id })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  }
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      <ProjectCardContent project={project} isDragging={isDragging} {...cardProps} />
+    </div>
+  )
+}
 
 const ProjectsPage = () => {
   const [projects, setProjects] = useState([])
@@ -14,7 +89,13 @@ const ProjectsPage = () => {
   const [deletingId, setDeletingId] = useState(null)
   const [formData, setFormData] = useState({ name: '', description: '', color: '#5b5fc7' })
   const [saving, setSaving] = useState(false)
+  const [activeProject, setActiveProject] = useState(null)
   const navigate = useNavigate()
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(KeyboardSensor)
+  )
 
   const fetchProjects = async () => {
     try {
@@ -89,6 +170,31 @@ const ProjectsPage = () => {
     setDeletingId(null)
   }
 
+  const handleDragStart = (event) => {
+    const project = projects.find(p => p.id === event.active.id)
+    if (project) setActiveProject(project)
+  }
+
+  const handleDragEnd = async (event) => {
+    const { active, over } = event
+    setActiveProject(null)
+
+    if (!over || active.id === over.id) return
+
+    const oldIndex = projects.findIndex(p => p.id === active.id)
+    const newIndex = projects.findIndex(p => p.id === over.id)
+
+    const newProjects = arrayMove(projects, oldIndex, newIndex)
+    setProjects(newProjects)
+
+    try {
+      await reorderProjects(newProjects.map(p => p.id))
+    } catch (err) {
+      setError(err.response?.data?.error || 'Failed to reorder projects')
+      fetchProjects() // rollback
+    }
+  }
+
   return (
     <div className="projects-container">
       <div className="projects-header">
@@ -111,39 +217,46 @@ const ProjectsPage = () => {
           <button className="btn-primary" onClick={openCreateForm}>Create Project</button>
         </div>
       ) : (
-        <div className="projects-grid">
-          {projects.map((project) => (
-            <div
-              key={project.id}
-              className="project-card"
-              style={{ borderTopColor: project.color || '#5b5fc7' }}
-              onClick={() => navigate(`/projects/${project.id}`)}
-            >
-              <div className="project-card-header">
-                <h3 className="project-name">{project.name}</h3>
-                <div className="project-actions">
-                  <button className="btn-icon-sm" onClick={(e) => openEditForm(e, project)} title="Edit">&#9998;</button>
-                  {deletingId === project.id ? (
-                    <span className="confirm-delete-inline">
-                      <button className="btn-confirm-del" onClick={(e) => handleDelete(e, project.id)}>Delete</button>
-                      <button className="btn-confirm-cancel" onClick={cancelDelete}>Cancel</button>
-                    </span>
-                  ) : (
-                    <button className="btn-icon-sm delete" onClick={(e) => confirmDelete(e, project.id)} title="Delete">&times;</button>
-                  )}
-                </div>
-              </div>
-              {project.description && <p className="project-description">{project.description}</p>}
-              <div className="project-stats">
-                <span className="stat todo">{project.todo_count || 0} To Do</span>
-                <span className="stat in-progress">{project.in_progress_count || 0} In Progress</span>
-                <span className="stat review">{project.review_count || 0} Review</span>
-                <span className="stat done">{project.done_count || 0} Done</span>
-              </div>
-              <div className="project-total">{project.total_tasks || 0} tasks total</div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext
+            items={projects.map(p => p.id)}
+            strategy={rectSortingStrategy}
+          >
+            <div className="projects-grid">
+              {projects.map((project) => (
+                <SortableProjectCard
+                  key={project.id}
+                  project={project}
+                  onEdit={openEditForm}
+                  onDelete={handleDelete}
+                  deletingId={deletingId}
+                  confirmDelete={confirmDelete}
+                  cancelDelete={cancelDelete}
+                />
+              ))}
             </div>
-          ))}
-        </div>
+          </SortableContext>
+
+          <DragOverlay>
+            {activeProject ? (
+              <ProjectCardContent
+                project={activeProject}
+                isDragging
+                onEdit={() => {}}
+                onDelete={() => {}}
+                deletingId={null}
+                confirmDelete={() => {}}
+                cancelDelete={() => {}}
+                style={{ cursor: 'grabbing' }}
+              />
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       )}
 
       {showForm && (
