@@ -9,14 +9,8 @@ import {
   useSensor,
   useSensors,
   useDroppable,
+  useDraggable,
 } from '@dnd-kit/core'
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-  useSortable,
-  arrayMove,
-} from '@dnd-kit/sortable'
-import { CSS } from '@dnd-kit/utilities'
 import { getProject } from '../api/projects'
 import { getProjectTasks, createTask, reorderTask } from '../api/tasks'
 import TaskCard from '../components/TaskCard'
@@ -31,20 +25,19 @@ const COLUMNS = [
 ]
 
 const PRIORITIES = ['urgent', 'high', 'medium', 'low']
+const PRIORITY_ORDER = { urgent: 0, high: 1, medium: 2, low: 3 }
 
-const SortableTaskCard = ({ task, onSelect }) => {
+const DraggableTaskCard = ({ task, onSelect }) => {
   const {
     attributes,
     listeners,
     setNodeRef,
     transform,
-    transition,
     isDragging,
-  } = useSortable({ id: task.id, data: { type: 'task', task } })
+  } = useDraggable({ id: task.id, data: { type: 'task', task } })
 
   const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
+    transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
     opacity: isDragging ? 0.4 : 1,
   }
 
@@ -82,6 +75,7 @@ const BoardPage = () => {
   const [newTaskTitle, setNewTaskTitle] = useState('')
   const [priorityFilter, setPriorityFilter] = useState(null)
   const [activeTask, setActiveTask] = useState(null)
+  const dragSourceColumn = useRef(null)
   const tasksRef = useRef(tasks)
   tasksRef.current = tasks
 
@@ -150,7 +144,12 @@ const BoardPage = () => {
     if (priorityFilter) {
       filtered = filtered.filter((t) => t.priority === priorityFilter)
     }
-    filtered.sort((a, b) => a.position - b.position)
+    filtered.sort((a, b) => {
+      const pa = PRIORITY_ORDER[a.priority] ?? 4
+      const pb = PRIORITY_ORDER[b.priority] ?? 4
+      if (pa !== pb) return pa - pb
+      return a.position - b.position
+    })
     return filtered
   }
 
@@ -162,7 +161,10 @@ const BoardPage = () => {
   const handleDragStart = (event) => {
     const { active } = event
     const task = tasks.find(t => t.id === active.id)
-    if (task) setActiveTask(task)
+    if (task) {
+      setActiveTask(task)
+      dragSourceColumn.current = task.status
+    }
   }
 
   const handleDragOver = (event) => {
@@ -181,47 +183,29 @@ const BoardPage = () => {
     if (!activeColumn || !overColumn || activeColumn === overColumn) return
 
     // Move task to new column optimistically
-    setTasks((prev) => {
-      const task = prev.find(t => t.id === activeId)
-      if (!task) return prev
-
-      const destTasks = prev.filter(t => t.status === overColumn && t.id !== activeId)
-      let newIndex = destTasks.length
-
-      if (overId !== overColumn) {
-        // Dropped over a specific task
-        const overTask = prev.find(t => t.id === overId)
-        if (overTask) {
-          newIndex = destTasks.findIndex(t => t.id === overId)
-          if (newIndex === -1) newIndex = destTasks.length
-        }
-      }
-
-      const updated = prev.map(t => {
-        if (t.id === activeId) {
-          return { ...t, status: overColumn, position: newIndex }
-        }
-        return t
-      })
-
-      // Recalculate positions in dest column
-      const destItems = updated
-        .filter(t => t.status === overColumn)
-        .sort((a, b) => {
-          if (a.id === activeId) return 0
-          if (b.id === activeId) return 0
-          return a.position - b.position
-        })
-
-      return updated
-    })
+    setTasks((prev) =>
+      prev.map(t =>
+        t.id === activeId ? { ...t, status: overColumn } : t
+      )
+    )
   }
 
   const handleDragEnd = async (event) => {
     const { active, over } = event
     setActiveTask(null)
 
-    if (!over) return
+    if (!over) {
+      // Revert optimistic update from handleDragOver
+      if (dragSourceColumn.current) {
+        setTasks((prev) =>
+          prev.map(t =>
+            t.id === active.id ? { ...t, status: dragSourceColumn.current } : t
+          )
+        )
+      }
+      dragSourceColumn.current = null
+      return
+    }
 
     const activeId = active.id
     const overId = over.id
@@ -234,59 +218,25 @@ const BoardPage = () => {
       ? overId
       : findColumnForTask(overId) || activeTask.status
 
-    // Get current tasks in target column (excluding active)
-    const columnTasks = tasksRef.current
-      .filter(t => t.status === targetColumn && t.id !== activeId)
-      .sort((a, b) => a.position - b.position)
-
-    // Determine new position
-    let newPosition
-    if (overId === targetColumn || !over.data?.current) {
-      // Dropped on empty column or column itself
-      newPosition = columnTasks.length
-    } else {
-      // Dropped on a task
-      const overIndex = columnTasks.findIndex(t => t.id === overId)
-      if (overIndex === -1) {
-        newPosition = columnTasks.length
-      } else {
-        newPosition = overIndex
-      }
+    // Prevent within-column reordering — tasks auto-sort by priority
+    if (dragSourceColumn.current === targetColumn) {
+      dragSourceColumn.current = null
+      return
     }
 
+    // Place at the end of the target column
+    const columnTasks = tasksRef.current
+      .filter(t => t.status === targetColumn && t.id !== activeId)
+    const newPosition = columnTasks.length
+
     // Optimistic update
-    setTasks((prev) => {
-      const updated = prev.map(t => {
-        if (t.id === activeId) {
-          return { ...t, status: targetColumn, position: newPosition }
-        }
-        return t
-      })
+    setTasks((prev) =>
+      prev.map(t =>
+        t.id === activeId ? { ...t, status: targetColumn, position: newPosition } : t
+      )
+    )
 
-      // Recalculate all positions in the target column
-      const inColumn = updated
-        .filter(t => t.status === targetColumn)
-        .sort((a, b) => {
-          if (a.id === activeId) return -1
-          if (b.id === activeId) return 1
-          return a.position - b.position
-        })
-
-      // Insert at correct position
-      const withoutActive = inColumn.filter(t => t.id !== activeId)
-      const activeItem = inColumn.find(t => t.id === activeId)
-      withoutActive.splice(newPosition, 0, activeItem)
-
-      const positionMap = {}
-      withoutActive.forEach((t, i) => { positionMap[t.id] = i })
-
-      return updated.map(t => {
-        if (positionMap[t.id] !== undefined) {
-          return { ...t, position: positionMap[t.id] }
-        }
-        return t
-      })
-    })
+    dragSourceColumn.current = null
 
     // API call
     try {
@@ -355,18 +305,13 @@ const BoardPage = () => {
                 </div>
 
                 <DroppableColumn id={col.key}>
-                  <SortableContext
-                    items={columnTasks.map(t => t.id)}
-                    strategy={verticalListSortingStrategy}
-                  >
                     {columnTasks.map((task) => (
-                      <SortableTaskCard
+                      <DraggableTaskCard
                         key={task.id}
                         task={task}
                         onSelect={handleTaskSelect}
                       />
                     ))}
-                  </SortableContext>
 
                   {columnTasks.length === 0 && addingToColumn !== col.key && (
                     <div className="column-empty">No tasks</div>
