@@ -158,7 +158,13 @@ router.post('/refresh', async (req, res) => {
       { expiresIn: process.env.JWT_ACCESS_EXPIRATION }
     );
 
-    res.json({ accessToken });
+    res.json({
+      accessToken,
+      user: {
+        id: user.id,
+        email: user.email,
+      },
+    });
   } catch (error) {
     console.error('Token refresh error:', error);
     res.status(500).json({ error: 'Internal server error' });

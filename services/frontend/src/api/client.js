@@ -26,9 +26,9 @@ const refreshAccessToken = async () => {
     if (!refreshToken) throw new Error('No refresh token')
 
     const response = await axios.post('/api/auth/refresh', { refreshToken })
-    const { accessToken } = response.data
+    const { accessToken, user } = response.data
     localStorage.setItem('accessToken', accessToken)
-    return accessToken
+    return { accessToken, user }
   })()
 
   try {
@@ -37,6 +37,8 @@ const refreshAccessToken = async () => {
     refreshPromise = null
   }
 }
+
+export { refreshAccessToken, isTokenExpiringSoon }
 
 export const createApiClient = (baseURL) => {
   const api = axios.create({ baseURL })
@@ -49,7 +51,8 @@ export const createApiClient = (baseURL) => {
 
     if (token && !isAuthEndpoint && isTokenExpiringSoon(token)) {
       try {
-        token = await refreshAccessToken()
+        const result = await refreshAccessToken()
+        token = result.accessToken
       } catch {
         // Fallback: отправляем с текущим токеном, response interceptor обработает 401
       }
@@ -77,8 +80,8 @@ export const createApiClient = (baseURL) => {
         originalRequest._retry = true
 
         try {
-          const newToken = await refreshAccessToken()
-          originalRequest.headers.Authorization = `Bearer ${newToken}`
+          const result = await refreshAccessToken()
+          originalRequest.headers.Authorization = `Bearer ${result.accessToken}`
           return api(originalRequest)
         } catch {
           localStorage.removeItem('accessToken')

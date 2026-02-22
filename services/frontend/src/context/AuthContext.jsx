@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect } from 'react'
-import { createApiClient } from '../api/client'
+import { createApiClient, refreshAccessToken, isTokenExpiringSoon } from '../api/client'
 
 const AuthContext = createContext(null)
 const api = createApiClient('/api/auth')
@@ -19,20 +19,25 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const accessToken = localStorage.getItem('accessToken')
-      const refreshToken = localStorage.getItem('refreshToken')
+      const refreshTokenValue = localStorage.getItem('refreshToken')
 
-      if (!accessToken && !refreshToken) {
+      if (!accessToken && !refreshTokenValue) {
         setLoading(false)
         return
       }
 
       try {
-        const response = await api.get('/me')
-        setUser(response.data)
+        if (accessToken && !isTokenExpiringSoon(accessToken)) {
+          const response = await api.get('/me')
+          setUser(response.data)
+        } else if (refreshTokenValue) {
+          const result = await refreshAccessToken()
+          setUser(result.user)
+        }
       } catch (error) {
-        // Interceptor handles refresh automatically on 401/403
-        // If it still fails, tokens are cleared by the interceptor
         console.error('Failed to restore session:', error)
+        localStorage.removeItem('accessToken')
+        localStorage.removeItem('refreshToken')
       } finally {
         setLoading(false)
       }
