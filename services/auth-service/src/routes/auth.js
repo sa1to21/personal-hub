@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { pool } = require('../config/database');
+const { pool, queryWithRetry } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { registerSchema, loginSchema, refreshSchema } = require('../utils/validation');
 
@@ -125,7 +125,7 @@ router.post('/refresh', async (req, res) => {
 
     const { refreshToken } = req.body;
 
-    const tokenResult = await pool.query(
+    const tokenResult = await queryWithRetry(
       'SELECT * FROM refresh_tokens WHERE token = $1 AND expires_at > NOW()',
       [refreshToken]
     );
@@ -141,7 +141,7 @@ router.post('/refresh', async (req, res) => {
       return res.status(403).json({ error: 'Invalid refresh token' });
     }
 
-    const userResult = await pool.query(
+    const userResult = await queryWithRetry(
       'SELECT id, email FROM users WHERE id = $1',
       [decoded.userId]
     );
@@ -173,7 +173,7 @@ router.post('/refresh', async (req, res) => {
 
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(
+    const result = await queryWithRetry(
       'SELECT id, email, created_at FROM users WHERE id = $1',
       [req.user.userId]
     );

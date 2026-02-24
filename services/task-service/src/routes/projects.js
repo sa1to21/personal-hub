@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const { pool, queryWithRetry } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { createProjectSchema, updateProjectSchema } = require('../utils/validation');
 
@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
   try {
     const userId = req.user.userId;
 
-    const result = await pool.query(
+    const result = await queryWithRetry(
       `SELECT p.*,
         COUNT(t.id) FILTER (WHERE t.status = 'todo') AS todo_count,
         COUNT(t.id) FILTER (WHERE t.status = 'in_progress') AS in_progress_count,

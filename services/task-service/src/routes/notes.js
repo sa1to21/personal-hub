@@ -1,5 +1,5 @@
 const express = require('express');
-const { pool } = require('../config/database');
+const { pool, queryWithRetry } = require('../config/database');
 const { authenticateToken } = require('../middleware/auth');
 const { upsertDailyNoteSchema } = require('../utils/validation');
 
@@ -10,7 +10,7 @@ router.use(authenticateToken);
 router.get('/daily', async (req, res) => {
   try {
     const date = req.query.date || new Date().toISOString().split('T')[0];
-    const result = await pool.query(
+    const result = await queryWithRetry(
       'SELECT id, content, date, updated_at FROM daily_notes WHERE user_id = $1 AND date = $2',
       [req.user.userId, date]
     );
@@ -33,7 +33,7 @@ router.put('/daily', async (req, res) => {
       ? new Date(value.date).toISOString().split('T')[0]
       : new Date().toISOString().split('T')[0];
 
-    const result = await pool.query(
+    const result = await queryWithRetry(
       `INSERT INTO daily_notes (user_id, date, content, updated_at)
        VALUES ($1, $2, $3, NOW())
        ON CONFLICT (user_id, date)

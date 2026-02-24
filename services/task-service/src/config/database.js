@@ -4,9 +4,31 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   max: 10,
   min: 2,
-  idleTimeoutMillis: 1800000,
-  connectionTimeoutMillis: 5000,
+  idleTimeoutMillis: 10000,
+  connectionTimeoutMillis: 3000,
+  allowExitOnIdle: false,
 });
+
+// Keep-alive: периодически проверяем живость соединений
+setInterval(async () => {
+  try {
+    await pool.query('SELECT 1');
+  } catch (err) {
+    console.error('Pool keep-alive failed:', err.message);
+  }
+}, 30000);
+
+// Retry-обёртка для запросов
+const queryWithRetry = async (text, params, retries = 2) => {
+  for (let i = 0; i <= retries; i++) {
+    try {
+      return await pool.query(text, params);
+    } catch (err) {
+      if (i === retries || !err.message?.includes('Connection terminated')) throw err;
+      console.warn(`Query retry ${i + 1}/${retries} after connection error`);
+    }
+  }
+};
 
 const initDatabase = async () => {
   const client = await pool.connect();
@@ -93,4 +115,4 @@ const initDatabase = async () => {
   }
 };
 
-module.exports = { pool, initDatabase };
+module.exports = { pool, queryWithRetry, initDatabase };
