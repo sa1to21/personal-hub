@@ -72,6 +72,17 @@ const initDatabase = async () => {
         label_id UUID NOT NULL REFERENCES labels(id) ON DELETE CASCADE,
         PRIMARY KEY (task_id, label_id)
       );
+
+      CREATE TABLE IF NOT EXISTS daily_notes (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        user_id UUID NOT NULL,
+        date DATE NOT NULL DEFAULT CURRENT_DATE,
+        content TEXT DEFAULT '',
+        updated_at TIMESTAMP DEFAULT NOW(),
+        UNIQUE(user_id, date)
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_daily_notes_user_date ON daily_notes(user_id, date);
     `);
     console.log('Database initialized successfully');
   } catch (error) {

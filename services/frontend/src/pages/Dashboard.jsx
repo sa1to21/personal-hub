@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import DailyNotes from '../components/DailyNotes'
 import './Dashboard.css'
 
 const Dashboard = () => {
@@ -63,13 +64,9 @@ const Dashboard = () => {
               <span className="badge">Скоро</span>
             </div>
 
-            <div className="feature-card coming-soon">
-              <div className="feature-icon">💰</div>
-              <h3>Финансы</h3>
-              <p>Учет доходов и расходов</p>
-              <span className="badge">Скоро</span>
-            </div>
           </div>
+
+          <DailyNotes />
         </div>
       </div>
     </div>

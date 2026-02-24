@@ -6,6 +6,7 @@ const projectRoutes = require('./routes/projects');
 const taskRoutes = require('./routes/tasks');
 const checklistRoutes = require('./routes/checklists');
 const labelRoutes = require('./routes/labels');
+const noteRoutes = require('./routes/notes');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,6 +22,7 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/checklists', checklistRoutes);
 app.use('/api/labels', labelRoutes);
+app.use('/api/notes', noteRoutes);
 
 const startServer = async () => {
   try {

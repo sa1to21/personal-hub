@@ -58,6 +58,12 @@ const createLabelSchema = Joi.object({
   color: Joi.string().pattern(/^#[0-9a-fA-F]{6}$/).required(),
 });
 
+// Daily notes schemas
+const upsertDailyNoteSchema = Joi.object({
+  content: Joi.string().allow('').required(),
+  date: Joi.date().iso().optional(),
+});
+
 module.exports = {
   createProjectSchema,
   updateProjectSchema,
@@ -67,4 +73,5 @@ module.exports = {
   createChecklistSchema,
   updateChecklistSchema,
   createLabelSchema,
+  upsertDailyNoteSchema,
 };
