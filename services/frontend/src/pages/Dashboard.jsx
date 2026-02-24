@@ -20,25 +20,7 @@ const Dashboard = () => {
         </div>
 
         <div className="dashboard-content">
-          <div className="welcome-section">
-            <div className="icon-circle">
-              <svg
-                width="48"
-                height="48"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
-                <circle cx="12" cy="7" r="4" />
-              </svg>
-            </div>
-            <h2>Ваш Personal Hub готов к работе</h2>
-            <p>Здесь скоро появятся задачи, заметки и другие модули для повышения продуктивности</p>
-          </div>
+          <DailyNotes />
 
           <div className="features-grid">
             <Link to="/projects" className="feature-card-link">
@@ -63,10 +45,27 @@ const Dashboard = () => {
               <p>Трекер ежедневных привычек</p>
               <span className="badge">Скоро</span>
             </div>
-
           </div>
 
-          <DailyNotes />
+          <div className="welcome-section">
+            <div className="icon-circle">
+              <svg
+                width="48"
+                height="48"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                <circle cx="12" cy="7" r="4" />
+              </svg>
+            </div>
+            <h2>Ваш Personal Hub готов к работе</h2>
+            <p>Здесь скоро появятся задачи, заметки и другие модули для повышения продуктивности</p>
+          </div>
         </div>
       </div>
     </div>
