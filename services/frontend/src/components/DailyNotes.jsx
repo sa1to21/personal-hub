@@ -1,43 +1,41 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { getDailyNote, saveDailyNote } from '../api/notes'
+import { getQuickNote, saveQuickNote } from '../api/notes'
 import './DailyNotes.css'
 
-const DailyNotes = () => {
+const QuickNotes = () => {
   const [content, setContent] = useState('')
   const [savedContent, setSavedContent] = useState('')
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
   const saveTimerRef = useRef(null)
 
-  const today = new Date().toISOString().split('T')[0]
-
   useEffect(() => {
     const load = async () => {
       try {
-        const note = await getDailyNote(today)
+        const note = await getQuickNote()
         setContent(note.content || '')
         setSavedContent(note.content || '')
       } catch (err) {
-        console.error('Failed to load daily note:', err)
+        console.error('Failed to load note:', err)
       } finally {
         setLoading(false)
       }
     }
     load()
-  }, [today])
+  }, [])
 
   const save = useCallback(async (text) => {
     if (text === savedContent) return
     setSaving(true)
     try {
-      await saveDailyNote(text, today)
+      await saveQuickNote(text)
       setSavedContent(text)
     } catch (err) {
-      console.error('Failed to save daily note:', err)
+      console.error('Failed to save note:', err)
     } finally {
       setSaving(false)
     }
-  }, [savedContent, today])
+  }, [savedContent])
 
   const handleChange = (e) => {
     const val = e.target.value
@@ -56,7 +54,7 @@ const DailyNotes = () => {
     return (
       <div className="daily-notes">
         <div className="daily-notes-header">
-          <h3>Daily Notes</h3>
+          <h3>Quick Notes</h3>
         </div>
         <div className="daily-notes-body loading">Loading...</div>
       </div>
@@ -68,8 +66,7 @@ const DailyNotes = () => {
       <div className="daily-notes-header">
         <div className="daily-notes-title">
           <span className="daily-notes-icon">&#128221;</span>
-          <h3>Daily Notes</h3>
-          <span className="daily-notes-date">{today}</span>
+          <h3>Quick Notes</h3>
         </div>
         {saving && <span className="daily-notes-saving">Saving...</span>}
       </div>
@@ -79,11 +76,11 @@ const DailyNotes = () => {
           value={content}
           onChange={handleChange}
           onBlur={handleBlur}
-          placeholder="Write your daily notes here..."
+          placeholder="Dump your thoughts here..."
         />
       </div>
     </div>
   )
 }
 
-export default DailyNotes
+export default QuickNotes

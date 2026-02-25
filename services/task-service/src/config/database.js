@@ -95,16 +95,12 @@ const initDatabase = async () => {
         PRIMARY KEY (task_id, label_id)
       );
 
-      CREATE TABLE IF NOT EXISTS daily_notes (
+      CREATE TABLE IF NOT EXISTS quick_notes (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        user_id UUID NOT NULL,
-        date DATE NOT NULL DEFAULT CURRENT_DATE,
+        user_id UUID NOT NULL UNIQUE,
         content TEXT DEFAULT '',
-        updated_at TIMESTAMP DEFAULT NOW(),
-        UNIQUE(user_id, date)
+        updated_at TIMESTAMP DEFAULT NOW()
       );
-
-      CREATE INDEX IF NOT EXISTS idx_daily_notes_user_date ON daily_notes(user_id, date);
     `);
     console.log('Database initialized successfully');
   } catch (error) {
