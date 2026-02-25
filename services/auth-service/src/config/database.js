@@ -10,13 +10,14 @@ const pool = new Pool({
 });
 
 // Keep-alive: периодически проверяем живость соединений
-setInterval(async () => {
+const keepAliveInterval = setInterval(async () => {
   try {
     await pool.query('SELECT 1');
   } catch (err) {
     console.error('Pool keep-alive failed:', err.message);
   }
 }, 30000);
+keepAliveInterval.unref();
 
 // Retry-обёртка для запросов
 const queryWithRetry = async (text, params, retries = 2) => {
