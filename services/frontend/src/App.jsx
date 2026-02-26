@@ -43,8 +43,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/tasks" element={<Navigate to="/projects" />} />
-          <Route path="/" element={<Navigate to="/projects" />} />
+          <Route path="/tasks" element={<Navigate to="/dashboard" />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
         </Routes>
         </Suspense>
       </Router>

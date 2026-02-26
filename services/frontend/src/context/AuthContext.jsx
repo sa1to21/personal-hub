@@ -81,7 +81,7 @@ export const AuthProvider = ({ children }) => {
         fontSize: '18px',
         color: 'white'
       }}>
-        Загрузка...
+        Loading...
       </div>
     )
   }

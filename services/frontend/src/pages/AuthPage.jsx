@@ -23,9 +23,9 @@ const AuthPage = () => {
       } else {
         await register(email, password)
       }
-      navigate('/projects')
+      navigate('/dashboard')
     } catch (err) {
-      setError(err.response?.data?.error || 'Ошибка сервера')
+      setError(err.response?.data?.error || 'Server error')
     } finally {
       setLoading(false)
     }
@@ -36,7 +36,7 @@ const AuthPage = () => {
       <div className="auth-card">
         <div className="auth-header">
           <h1>Personal Hub</h1>
-          <p>Ваш личный центр продуктивности</p>
+          <p>Your personal productivity hub</p>
         </div>
 
         <div className="auth-tabs">
@@ -47,7 +47,7 @@ const AuthPage = () => {
               setError('')
             }}
           >
-            Вход
+            Login
           </button>
           <button
             className={`tab ${!isLogin ? 'active' : ''}`}
@@ -56,7 +56,7 @@ const AuthPage = () => {
               setError('')
             }}
           >
-            Регистрация
+            Register
           </button>
         </div>
 
@@ -76,26 +76,26 @@ const AuthPage = () => {
           </div>
 
           <div className="form-group">
-            <label htmlFor="password">Пароль</label>
+            <label htmlFor="password">Password</label>
             <input
               type="password"
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Минимум 6 символов"
+              placeholder="Minimum 6 characters"
               minLength={6}
               required
             />
           </div>
 
           <button type="submit" className="submit-btn" disabled={loading}>
-            {loading ? 'Загрузка...' : isLogin ? 'Войти' : 'Зарегистрироваться'}
+            {loading ? 'Loading...' : isLogin ? 'Login' : 'Register'}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>
-            {isLogin ? 'Нет аккаунта?' : 'Уже есть аккаунт?'}
+            {isLogin ? 'No account?' : 'Already have an account?'}
             <button
               onClick={() => {
                 setIsLogin(!isLogin)
@@ -103,7 +103,7 @@ const AuthPage = () => {
               }}
               className="link-btn"
             >
-              {isLogin ? 'Зарегистрироваться' : 'Войти'}
+              {isLogin ? 'Register' : 'Login'}
             </button>
           </p>
         </div>

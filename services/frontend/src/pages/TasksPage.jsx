@@ -79,7 +79,7 @@ const TasksPage = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return null
-    return new Date(dateStr).toLocaleDateString('ru-RU', {
+    return new Date(dateStr).toLocaleDateString('en-US', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

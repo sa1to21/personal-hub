@@ -11,11 +11,11 @@ const Dashboard = () => {
       <div className="dashboard-card">
         <div className="dashboard-header">
           <div>
-            <h1>Добро пожаловать!</h1>
+            <h1>Welcome back!</h1>
             <p className="user-email">{user?.email}</p>
           </div>
           <button onClick={logout} className="logout-btn">
-            Выйти
+            Logout
           </button>
         </div>
 
@@ -34,16 +34,16 @@ const Dashboard = () => {
 
             <div className="feature-card coming-soon">
               <div className="feature-icon">📔</div>
-              <h3>Заметки</h3>
-              <p>Markdown заметки с тегами</p>
-              <span className="badge">Скоро</span>
+              <h3>Notes</h3>
+              <p>Markdown notes with tags</p>
+              <span className="badge">Soon</span>
             </div>
 
             <div className="feature-card coming-soon">
               <div className="feature-icon">💪</div>
-              <h3>Привычки</h3>
-              <p>Трекер ежедневных привычек</p>
-              <span className="badge">Скоро</span>
+              <h3>Habits</h3>
+              <p>Daily habits tracker</p>
+              <span className="badge">Soon</span>
             </div>
           </div>
 
@@ -63,8 +63,8 @@ const Dashboard = () => {
                 <circle cx="12" cy="7" r="4" />
               </svg>
             </div>
-            <h2>Ваш Personal Hub готов к работе</h2>
-            <p>Здесь скоро появятся задачи, заметки и другие модули для повышения продуктивности</p>
+            <h2>Your Personal Hub is ready</h2>
+            <p>Tasks, notes and other productivity modules will appear here soon</p>
           </div>
         </div>
       </div>
